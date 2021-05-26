@@ -146,8 +146,7 @@ class PetFriends:
         return status, result
 
     def add_photo_of_pet_without_photo(self, auth_key: json, pet_id: str) -> json:
-        """This method allows to add photo of a pet. Takes API key, pet id and path to pet photo.
-        Response contains the status code and new pet data in json format.
+        """This method allows to add photo of a pet. Without 'photo' parameter for testing purpose.
         """
 
         data = MultipartEncoder(
@@ -159,6 +158,23 @@ class PetFriends:
         status = res.status_code
         result = ''
 
+        try:
+            result = res.json()
+        except:
+            result = res.text
+
+        return status, result
+
+    def get_api_key_none_password_param(self, email: str) -> json:
+        """Getting API key, without 'password' header for testing purposes.
+        """
+        headers = {
+            'email': email,
+        }
+
+        res = requests.get(self.base_url + 'api/key', headers=headers)
+        status = res.status_code
+        result = ''
         try:
             result = res.json()
         except:

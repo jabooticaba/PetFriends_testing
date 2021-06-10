@@ -1,4 +1,5 @@
 import sys
+import pytest
 
 sys.path.insert(0, '..')
 from api import PetFriends
@@ -7,19 +8,42 @@ from settings import valid_email, valid_password
 pf = PetFriends()
 
 
-def test_get_api_for_valid_user(email=valid_email, password=valid_password):
-    status, result = pf.get_api_key(email, password)
+class TestFunctions:
 
-    assert status == 200
-    assert 'key' in result
+    @pytest.fixture(autouse=True)
+    def get_key(self):
+        self.pf = PetFriends()
+        status, self.key = self.pf.get_api_key(valid_email, valid_password)
+        assert status == 200
+        assert 'key' in self.key
+
+        yield
+        assert self.status == 200
+
+    def test_get_all_pets_with_valid_key(self, get_key, filter=''):  # filter available values : my_pets
+        self.status, result = self.pf.list_of_pets(self.key, filter)
+        assert len(result['pets']) > 0
+
+    def test_get_my_pets_with_valid_key(self, get_key, filter='my_pets'):  # filter available values : my_pets
+        self.status, result = self.pf.list_of_pets(self.key, filter)
+        assert len(result['pets']) > 0
 
 
-def test_get_list_of_pets_with_valid_key(filter='my_pets'):
-    _, auth_key = pf.get_api_key(valid_email, valid_password)
-
-    status, result = pf.list_of_pets(auth_key, filter)
-    assert status == 200
-    assert len(result['pets']) > 0
+# Сделано внутри класса TestFunctions
+#
+# def test_get_api_for_valid_user(email=valid_email, password=valid_password):
+#     status, result = pf.get_api_key(email, password)
+#
+#     assert status == 200
+#     assert 'key' in result
+#
+#
+# def test_get_list_of_pets_with_valid_key(filter='my_pets'):
+#     _, auth_key = pf.get_api_key(valid_email, valid_password)
+#
+#     status, result = pf.list_of_pets(auth_key, filter)
+#     assert status == 200
+#     assert len(result['pets']) > 0
 
 
 def test_add_new_pet_with_valid_data_and_photo(name="Пушистик", animal_type="Racoon",

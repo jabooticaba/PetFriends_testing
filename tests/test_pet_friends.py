@@ -20,21 +20,21 @@ class TestFunctions:
         yield
         assert self.status == 200
 
-    def test_get_all_pets_with_valid_key(self, get_key, filter=''):  # filter available values : my_pets
+    def test_get_all_pets_with_valid_key(self, filter=''):  # filter available values : my_pets
         self.status, result = self.pf.list_of_pets(self.key, filter)
         assert len(result['pets']) > 0
 
-    def test_get_my_pets_with_valid_key(self, get_key, filter='my_pets'):  # filter available values : my_pets
+    def test_get_my_pets_with_valid_key(self, filter='my_pets'):  # filter available values : my_pets
         self.status, result = self.pf.list_of_pets(self.key, filter)
         assert len(result['pets']) > 0
 
-    def test_add_new_pet_with_valid_data_and_photo(self, get_key, name="Пушистик", animal_type="Racoon",
+    def test_add_new_pet_with_valid_data_and_photo(self, name="Пушистик", animal_type="Racoon",
                                                age='4', pet_photo="../images/animal.jpg"):
         self.status, result = self.pf.add_new_pet(self.key, name, animal_type, age, pet_photo)
         assert result['name'] == "Пушистик"
         assert result['age'] == '4'
 
-    def test_update_information_about_pet_with_valid_data(self, get_key, name='Полосатик', animal_type="Енот", age='4'):
+    def test_update_information_about_pet_with_valid_data(self, name='Полосатик', animal_type="Енот", age='4'):
 
         _, my_pets = self.pf.list_of_pets(self.key, 'my_pets')
 
@@ -58,13 +58,13 @@ class TestFunctions:
 
         assert pet_id not in my_pets.values()
 
-    def test_add_new_pet_without_photo_valid_data(self, get_key, name="Продам гитару", animal_type="Аккустика",
+    def test_add_new_pet_without_photo_valid_data(self, name="Продам гитару", animal_type="Аккустика",
                                                   age='4'):
         self.status, result = self.pf.add_new_pet_without_photo(self.key, name, animal_type, age)
         assert result['name'] == "Продам гитару"
         assert result['age'] == '4'
 
-    def test_add_photo_of_pet_valid_data(self, get_key, pet_photo="../images/guitar.jpg"):
+    def test_add_photo_of_pet_valid_data(self, pet_photo="../images/guitar.jpg"):
         _, my_pets = pf.list_of_pets(self.key, 'my_pets')
 
         if len(my_pets['pets']) == 0:

@@ -18,21 +18,26 @@ def get_key():
     # yield
     # assert status == 200
 
+''' TODO Переделать следующую функцию таким образом, что бы она не требовала параметр
+get_key, а брала его из фикстуры автоматом
+'''
+
+
 def test_get_all_pets_with_valid_key(get_key, filter=''):  # filter available values : my_pets
         status, result = pf.list_of_pets(get_key, filter)
         assert len(result['pets']) > 0
         assert status == 200
 
-def test_get_my_pets_with_valid_key(self, get_key, filter='my_pets'):  # filter available values : my_pets
-        self.status, result = self.pf.list_of_pets(self.key, filter)
+def test_get_my_pets_with_valid_key(get_key, filter='my_pets'):  # filter available values : my_pets
+        status, result = pf.list_of_pets(get_key, filter)
         assert len(result['pets']) > 0
 
 
 def test_add_new_pet_with_valid_data_and_photo(name="Пушистик", animal_type="Racoon",
                                                age='4', pet_photo="../images/animal.jpg"):
-    _, auth_key = pf.get_api_key(valid_email, valid_password)
 
-    status, result = pf.add_new_pet(auth_key, name, animal_type, age, pet_photo)  # auth_key replaced
+
+    status, result = pf.add_new_pet(get_key, name, animal_type, age, pet_photo)
     assert status == 200
     assert result['name'] == "Пушистик"
     assert result['age'] == '4'
@@ -71,7 +76,7 @@ def test_add_new_pet_without_photo_valid_data(name="Продам гитару", 
                                               age='4'):
     _, auth_key = pf.get_api_key(valid_email, valid_password)
 
-    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)  # auth_key replaced
+    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)
     assert status == 200
     assert result['name'] == "Продам гитару"
     assert result['age'] == '4'
@@ -108,7 +113,7 @@ def test_add_new_pet_without_photo_empty_name(name="", animal_type="Аккуст
                                               age='4'):
     _, auth_key = pf.get_api_key(valid_email, valid_password)
 
-    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)  # auth_key replaced
+    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)
     assert status == 400
     assert result['name'] is not ""
 
@@ -117,7 +122,7 @@ def test_add_new_pet_without_photo_empty_animal_type(name="Гитара", animal
                                               age='4'):
     _, auth_key = pf.get_api_key(valid_email, valid_password)
 
-    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)  # auth_key replaced
+    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)
     # assert status == 400
     assert result['animal_type'] is not ""
 
@@ -125,7 +130,7 @@ def test_add_new_pet_without_photo_age_is_letter(name="Гитара", animal_typ
                                               age='w'):
     _, auth_key = pf.get_api_key(valid_email, valid_password)
 
-    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)  # auth_key replaced
+    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)
     # assert status == 400
     assert result['age'] is not "w"
 
@@ -185,7 +190,7 @@ def test_add_new_pet_without_photo_name_long(name= f'{10000*"a"}', animal_type="
                                               age='2'):
     _, auth_key = pf.get_api_key(valid_email, valid_password)
 
-    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)  # auth_key replaced
+    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)
     assert status == 400
 
 

@@ -4,6 +4,7 @@ import pytest
 sys.path.insert(0, '..')
 from api import PetFriends
 from settings import valid_email, valid_password
+import os
 
 pf = PetFriends()
 
@@ -22,14 +23,17 @@ class TestFunctions:
 
     @pytest.fixture(autouse=True)
     def logging(self, request):
-        self.pf = PetFriends()
-
         yield
-
+        # session = request.node
+        # for item in session.items:
+        #     print(item)
+        full_name = os.environ.get('PYTEST_CURRENT_TEST')
         with open('log.txt', 'at', encoding='utf8') as log_file:
             log_file.write(f'\n============Test::{request.node.name}================\n')
             log_file.write(f'Status code: {str(self.status)}\n')
-            log_file.write(f'Body: {self.result}\n')
+            # log_file.write(f'Body: {self.result}\n')
+            log_file.write(f'Func name: {request.function.__name__}\n')
+            log_file.write(f'Experiment: {full_name}\n')
 
     @pytest.mark.smoke
     @pytest.mark.positive

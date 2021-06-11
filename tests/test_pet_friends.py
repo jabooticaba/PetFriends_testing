@@ -17,23 +17,46 @@ class TestFunctions:
         assert status == 200
         assert 'key' in self.key
 
+        # yield
+        # assert self.status == 200
+
+    @pytest.fixture(autouse=True)
+    def logging(self, request):
+        self.pf = PetFriends()
+
         yield
+
+        with open('log.txt', 'at', encoding='utf8') as log_file:
+            log_file.write(f'\n============Test::{request.node.name}================\n')
+            log_file.write(f'Status code: {str(self.status)}\n')
+            log_file.write(f'Body: {self.result}\n')
+
+    @pytest.mark.smoke
+    @pytest.mark.positive
+    def test_get_all_pets_with_valid_key(self, filter=''):  # filter available values : my_pets
+        self.status, self.result = pf.list_of_pets(self.key, filter)
+        assert len(self.result['pets']) > 0
         assert self.status == 200
 
-    def test_get_all_pets_with_valid_key(self, filter=''):  # filter available values : my_pets
-        self.status, result = self.pf.list_of_pets(self.key, filter)
-        assert len(result['pets']) > 0
-
+    @pytest.mark.xfail
+    @pytest.mark.smoke
+    @pytest.mark.positive
     def test_get_my_pets_with_valid_key(self, filter='my_pets'):  # filter available values : my_pets
         self.status, result = self.pf.list_of_pets(self.key, filter)
         assert len(result['pets']) > 0
+        assert self.status == 200
 
+    @pytest.mark.smoke
+    @pytest.mark.positive
     def test_add_new_pet_with_valid_data_and_photo(self, name="Пушистик", animal_type="Racoon",
-                                               age='4', pet_photo="../images/animal.jpg"):
+                                                   age='4', pet_photo="../images/animal.jpg"):
         self.status, result = self.pf.add_new_pet(self.key, name, animal_type, age, pet_photo)
         assert result['name'] == "Пушистик"
         assert result['age'] == '4'
+        assert self.status == 200
 
+    @pytest.mark.smoke
+    @pytest.mark.positive
     def test_update_information_about_pet_with_valid_data(self, name='Полосатик', animal_type="Енот", age='4'):
 
         _, my_pets = self.pf.list_of_pets(self.key, 'my_pets')
@@ -44,8 +67,11 @@ class TestFunctions:
 
         self.status, result = self.pf.update_pet_info(self.key, my_pets['pets'][0]['id'], name, animal_type, age)
         assert result['animal_type'] == 'Енот'
+        assert self.status == 200
 
-    def test_delete_pet_valid_id(self, get_key):
+    @pytest.mark.smoke
+    @pytest.mark.positive
+    def test_delete_pet_valid_id(self):
         _, my_pets = self.pf.list_of_pets(self.key, 'my_pets')
 
         if len(my_pets['pets']) == 0:
@@ -57,13 +83,19 @@ class TestFunctions:
         _, my_pets = self.pf.list_of_pets(self.key, "my_pets")
 
         assert pet_id not in my_pets.values()
+        assert self.status == 200
 
+    @pytest.mark.smoke
+    @pytest.mark.positive
     def test_add_new_pet_without_photo_valid_data(self, name="Продам гитару", animal_type="Аккустика",
                                                   age='4'):
         self.status, result = self.pf.add_new_pet_without_photo(self.key, name, animal_type, age)
         assert result['name'] == "Продам гитару"
         assert result['age'] == '4'
+        assert self.status == 200
 
+    @pytest.mark.smoke
+    @pytest.mark.positive
     def test_add_photo_of_pet_valid_data(self, pet_photo="../images/guitar.jpg"):
         _, my_pets = pf.list_of_pets(self.key, 'my_pets')
 
@@ -74,45 +106,47 @@ class TestFunctions:
         pet_id = my_pets['pets'][0]['id']
         self.status, result = self.pf.add_photo_of_pet(self.key, pet_id, pet_photo)
         assert result['pet_photo']
+        assert self.status == 200
 
+    @pytest.mark.smoke
+    @pytest.mark.negative
+    def test_add_photo_of_pet_no_photo(self):
+        _, my_pets = pf.list_of_pets(self.key, 'my_pets')
+
+        if len(my_pets['pets']) == 0:
+            pf.add_new_pet_without_photo(self.key, "Тест-кот", "кот", "2")
+            _, my_pets = pf.list_of_pets(self.key, "my_pets")
+
+        pet_id = my_pets['pets'][0]['id']
+        self.status, result = pf.add_photo_of_pet_without_photo(self.key, pet_id)
+        assert self.status == 400
+
+    @pytest.mark.xfail(reason='Bugged post request', raises=AssertionError)
+    @pytest.mark.smoke
+    @pytest.mark.negative
+    def test_add_new_pet_without_photo_empty_name(self, name="", animal_type="Аккустика",
+                                                  age='4'):
+
+        status, result = pf.add_new_pet_without_photo(self.key, name, animal_type, age)
+        assert status == 400
+        assert result['name'] is not ""
+
+    @pytest.mark.skip(reason='Bugged post request')
+    @pytest.mark.smoke
+    @pytest.mark.negative
+    def test_add_new_pet_without_photo_empty_animal_type(self, name="Гитара", animal_type='',
+                                                         age='4'):
+        status, result = pf.add_new_pet_without_photo(self.key, name, animal_type, age)  # auth_key replaced
+        assert status == 400
+        assert result['animal_type'] is not ""
 
 ''' Work in progress
 
 '''
 
 
-def test_add_photo_of_pet_no_photo():
-    _, auth_key = pf.get_api_key(valid_email, valid_password)
-    _, my_pets = pf.list_of_pets(auth_key, 'my_pets')
-
-    if len(my_pets['pets']) == 0:
-        pf.add_new_pet_without_photo(auth_key, "Тест-кот", "кот", "2")
-        _, my_pets = pf.list_of_pets(auth_key, "my_pets")
-
-    pet_id = my_pets['pets'][0]['id']
-    status, result = pf.add_photo_of_pet_without_photo(auth_key, pet_id)
-    assert status == 400
-
-
-def test_add_new_pet_without_photo_empty_name(name="", animal_type="Аккустика",
-                                              age='4'):
-    _, auth_key = pf.get_api_key(valid_email, valid_password)
-
-    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)  # auth_key replaced
-    assert status == 400
-    assert result['name'] is not ""
-
-
-def test_add_new_pet_without_photo_empty_animal_type(name="Гитара", animal_type='',
-                                              age='4'):
-    _, auth_key = pf.get_api_key(valid_email, valid_password)
-
-    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)  # auth_key replaced
-    # assert status == 400
-    assert result['animal_type'] is not ""
-
 def test_add_new_pet_without_photo_age_is_letter(name="Гитара", animal_type="Аккустика",
-                                              age='w'):
+                                                 age='w'):
     _, auth_key = pf.get_api_key(valid_email, valid_password)
 
     status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)  # auth_key replaced
@@ -171,13 +205,9 @@ def test_add_photo_of_pet_large_photo(pet_photo="../images/50mb_sample.jpg"):
     assert status == 400
 
 
-def test_add_new_pet_without_photo_name_long(name= f'{10000*"a"}', animal_type="кот",
-                                              age='2'):
+def test_add_new_pet_without_photo_name_long(name=f'{10000 * "a"}', animal_type="кот",
+                                             age='2'):
     _, auth_key = pf.get_api_key(valid_email, valid_password)
 
     status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)  # auth_key replaced
     assert status == 400
-
-
-
-

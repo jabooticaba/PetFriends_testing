@@ -7,6 +7,18 @@ class PetFriends:
     def __init__(self):
         self.base_url = 'https://petfriends1.herokuapp.com/'
 
+    def logging_wrapper(self):
+        def wrapper(*args, **kwargs):
+            output = self(*args, **kwargs)
+            print(f'Имя выполняемой функции: {self.__name__}')
+            print('Заголовки: ', *args[1:])
+            print(f'Код ответа: {output[0]}')
+            # print(f'Output: {output}')
+            return output
+
+        return wrapper
+
+    @logging_wrapper
     def get_api_key(self, email: str, password: str) -> json:
         """This method allows to get unique API key which should be used for other API methods
         and a status of request in JSON format.
@@ -26,6 +38,7 @@ class PetFriends:
 
         return status, result
 
+    @logging_wrapper
     def list_of_pets(self, auth_key: json, filter: str = '') -> json:
         """Method allows to get the status of the request and list of pets,
         which must match the filter and returned in json format. Filter variants: 'my_pets' or ''.

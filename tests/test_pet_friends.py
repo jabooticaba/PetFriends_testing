@@ -23,17 +23,17 @@ class TestFunctions:
 
     @pytest.fixture(autouse=True)
     def logging(self, request):
+        ''' Функция логирования для задания 21.6.4, 
+        реализовано: создание файла, внесение кода ответа, тела ответа
+        не реализовано: перечислены заголовки запроса, параметры пути, параметры строки и тело запроса
+        '''
         yield
-        # session = request.node
-        # for item in session.items:
-        #     print(item)
-        full_name = os.environ.get('PYTEST_CURRENT_TEST')
+
         with open('log.txt', 'at', encoding='utf8') as log_file:
             log_file.write(f'\n============Test::{request.node.name}================\n')
+            # log_file.write(f'Test name: {request.function.__name__}\n')
             log_file.write(f'Status code: {str(self.status)}\n')
-            # log_file.write(f'Body: {self.result}\n')
-            log_file.write(f'Func name: {request.function.__name__}\n')
-            log_file.write(f'Experiment: {full_name}\n')
+            log_file.write(f'Body: {self.result}\n')
 
     @pytest.mark.smoke
     @pytest.mark.positive

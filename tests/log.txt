@@ -1,0 +1,10 @@
+
+============Test::test_get_all_pets_with_valid_key================
+Status code: 200
+Func name: test_get_all_pets_with_valid_key
+Experiment: tests/test_pet_friends.py::TestFunctions::test_get_all_pets_with_valid_key
+
+============Test::test_get_all_pets_with_valid_key================
+Status code: 200
+Func name: test_get_all_pets_with_valid_key
+Experiment: tests/test_pet_friends.py::TestFunctions::test_get_all_pets_with_valid_key (teardown)

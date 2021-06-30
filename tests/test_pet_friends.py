@@ -9,7 +9,12 @@ import os
 pf = PetFriends()
 
 
-class TestFunctions:
+@pytest.fixture(autouse=True)
+def get_key():
+    status, key = pf.get_api_key(valid_email, valid_password)
+    assert status == 200
+    assert 'key' in key
+    return key
 
     @pytest.fixture(autouse=True)
     def get_key(self):
@@ -27,8 +32,6 @@ class TestFunctions:
         status, result = pf.get_api_key(email, password)
         assert status == 403
 
-        # yield
-        # assert self.status == 200
 
     # @pytest.fixture(autouse=True)
     # def logging(self, request):
@@ -44,16 +47,17 @@ class TestFunctions:
     #         log_file.write(f'Status code: {str(self.status)}\n')
     #         log_file.write(f'Body: {self.result}\n')
     #         log_file.write(f'Exp: {request.response}\n')
-
+    
+    
+    # Фукции, генерирующие тестовые данные
     def generate_string(n):
         return "x" * n
     
     def russian_chars():
         return 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
 
-    # 20 популярных китайских иероглифов
     def chinese_chars():
-        return '的一是不了人我在有他这为之大来以个中上们'
+        return '的一是不了人我在有他这为之大来以个中上们'     # 20 популярных китайских иероглифов
 
     def special_chars():
         return '|\\/!@#$%^&*()-_=+`~?"№;:[]{}'
@@ -170,6 +174,7 @@ class TestFunctions:
     @pytest.mark.positive
     def test_update_information_about_pet_with_valid_data(self, name='Полосатик', animal_type="Енот", age='4'):
 
+
         _, my_pets = self.pf.list_of_pets(self.key, 'my_pets')
 
         if len(my_pets['pets']) == 0:
@@ -205,9 +210,11 @@ class TestFunctions:
             pf.add_new_pet_without_photo(self.key, "Тест-кот", "кот", "2")
             _, my_pets = pf.list_of_pets(self.key, "my_pets")
 
+
         pet_id = my_pets['pets'][0]['id']
         self.status, result = pf.add_photo_of_pet_without_photo(self.key, pet_id)
         assert self.status == 400
+
 
     
     

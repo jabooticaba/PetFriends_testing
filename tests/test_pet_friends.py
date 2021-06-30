@@ -9,12 +9,7 @@ import os
 pf = PetFriends()
 
 
-@pytest.fixture(autouse=True)
-def get_key():
-    status, key = pf.get_api_key(valid_email, valid_password)
-    assert status == 200
-    assert 'key' in key
-    return key
+class TestFunctions:
 
     @pytest.fixture(autouse=True)
     def get_key(self):

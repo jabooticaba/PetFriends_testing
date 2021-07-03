@@ -4,6 +4,7 @@ import pytest
 sys.path.insert(0, '..')
 from api import PetFriends
 from settings import valid_email, valid_password
+from test_data_generators import chinese_chars, russian_chars, special_chars, generate_string
 import os
 
 pf = PetFriends()
@@ -17,16 +18,14 @@ class TestFunctions:
         status, self.key = self.pf.get_api_key(valid_email, valid_password)
         assert status == 200
         assert 'key' in self.key
-        
-        
+
     @pytest.mark.smoke
-    @pytest.mark.nagative
+    @pytest.mark.negative
     @pytest.mark.parametrize("email", ['valid_email', 'None'], ids=['valid', 'empty'])
-    @pytest.mark.parametrize("password", ['valid_password','None'], ids=['valid', 'empty'])
-    def test_get_api_key_negative(email, password):
+    @pytest.mark.parametrize("password", ['valid_password', 'None'], ids=['valid', 'empty'])
+    def test_get_api_key_negative(self, email, password):
         status, result = pf.get_api_key(email, password)
         assert status == 403
-
 
     # @pytest.fixture(autouse=True)
     # def logging(self, request):
@@ -42,22 +41,7 @@ class TestFunctions:
     #         log_file.write(f'Status code: {str(self.status)}\n')
     #         log_file.write(f'Body: {self.result}\n')
     #         log_file.write(f'Exp: {request.response}\n')
-    
-    
-    # Фукции, генерирующие тестовые данные
-    def generate_string(n):
-        return "x" * n
-    
-    def russian_chars():
-        return 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
 
-    def chinese_chars():
-        return '的一是不了人我在有他这为之大来以个中上们'     # 20 популярных китайских иероглифов
-
-    def special_chars():
-        return '|\\/!@#$%^&*()-_=+`~?"№;:[]{}'
-    
-   
     @pytest.mark.smoke
     @pytest.mark.positive
     @pytest.mark.parametrize("filter", ['', 'my_pets'], ids=['empty string', 'only my pets'])
@@ -65,19 +49,19 @@ class TestFunctions:
         self.status, self.result = pf.list_of_pets(self.key, filter)
         assert len(self.result['pets']) > 0
         assert self.status == 200
-        
+
     @pytest.mark.smoke
     @pytest.mark.negative
     @pytest.mark.xfail
     @pytest.mark.parametrize("filter",
-                            [generate_string(255)
-                                , generate_string(1001)
-                                , russian_chars()
-                                , russian_chars().upper()
-                                , chinese_chars()
-                                , special_chars()
-                                , 123
-                            ]
+                             [generate_string(255),
+                              generate_string(1001),
+                              russian_chars(),
+                              russian_chars().upper(),
+                              chinese_chars(),
+                              special_chars(),
+                              123
+                              ]
         , ids=['255 symbols'
             , 'more than 1000 symbols'
             , 'russian'
@@ -88,43 +72,43 @@ class TestFunctions:
     def test_get_all_pets_with_valid_key(self, filter):
         self.status, self.result = pf.list_of_pets(self.key, filter)
         assert self.status == 400
-      
-    
-#     def test_get_list_of_pets_invalid_api_key(filter=''):
-#         auth_key = {"key": "123"}
-#         self.status, result = pf.list_of_pets(self.key, filter)
-#         assert self.status == 200
-        
-        
+
+    #     def test_get_list_of_pets_invalid_api_key(filter=''):
+    #         auth_key = {"key": "123"}
+    #         self.status, result = pf.list_of_pets(self.key, filter)
+    #         assert self.status == 200
+
     @pytest.mark.smoke
     @pytest.mark.positive
     @pytest.mark.parametrize("name"
-        , [generate_string(255), generate_string(1001), russian_chars(), russian_chars().upper(), chinese_chars(), special_chars(), '123']
+        , [generate_string(255), generate_string(1001), russian_chars(), russian_chars().upper(), chinese_chars(),
+           special_chars(), '123']
         , ids=['255 symbols', 'more than 1000 symbols', 'russian', 'RUSSIAN', 'chinese', 'specials', 'digit'])
     @pytest.mark.parametrize("animal_type"
-        , ['', generate_string(255), generate_string(1001), russian_chars(), russian_chars().upper(), chinese_chars(), special_chars(), '123']
+        , ['', generate_string(255), generate_string(1001), russian_chars(), russian_chars().upper(), chinese_chars(),
+           special_chars(), '123']
         , ids=['empty', '255 symbols', 'more than 1000 symbols', 'russian', 'RUSSIAN', 'chinese', 'specials', 'digit'])
     @pytest.mark.parametrize("age", ['1'], ids=['min'])
-    def test_add_new_pet_without_photo_positive(self, name, animal_type,age):
+    def test_add_new_pet_without_photo_positive(self, name, animal_type, age):
         self.status, result = self.pf.add_new_pet_without_photo(self.key, name, animal_type, age)
         assert self.status == 200
         assert result['name'] == name
         assert result['age'] == age
         assert result['animal_type'] == animal_type
-            
-            
+
     @pytest.mark.smoke
     @pytest.mark.negative
     @pytest.mark.parametrize("name", [''], ids=['empty'])
     @pytest.mark.parametrize("animal_type", [''], ids=['empty'])
     @pytest.mark.parametrize("age"
-        , ['', '-1', '0', '100', '1.5', '2147483647', '2147483648', special_chars(), russian_chars(), russian_chars().upper(), chinese_chars()]
-        , ids=['empty', 'negative', 'zero', 'greater than max', 'float', 'int_max', 'int_max + 1', 'specials', 'russian', 'RUSSIAN', 'chinese'])
+        , ['', '-1', '0', '100', '1.5', '2147483647', '2147483648', special_chars(), \
+           russian_chars(), russian_chars().upper(), chinese_chars()]
+        , ids=['empty', 'negative', 'zero', 'greater than max', 'float', 'int_max', \
+               'int_max + 1', 'specials', 'russian', 'RUSSIAN', 'chinese'])
     def test_add_new_pet_without_photo_negative(self, name, animal_type, age):
         self.status, result = self.pf.add_new_pet_without_photo(self.key, name, animal_type, age)
         assert self.status == 400
-    
-        
+
     @pytest.mark.smoke
     @pytest.mark.positive
     @pytest.mark.parametrize("pet_photo", ['../images/guitar.jpg'], ids=['valid'])
@@ -139,11 +123,11 @@ class TestFunctions:
         self.status, result = self.pf.add_photo_of_pet(self.key, pet_id, pet_photo)
         assert result['pet_photo']
         assert self.status == 200
-    
-    
+
     @pytest.mark.negative
-    @pytest.mark.parametrize("pet_photo", ['../images/text_file.txt', '../images/50mb_sample.jpg'], ids=['text_format', 'large_photo'])  #TODO Add all negative parameters
-    def test_add_photo_of_pet_file_negative(pet_photo):
+    @pytest.mark.parametrize("pet_photo", ['../images/text_file.txt', '../images/50mb_sample.jpg'],
+                             ids=['text_format', 'large_photo'])  # TODO Add all negative parameters
+    def test_add_photo_of_pet_file_negative(self, pet_photo):
         _, auth_key = pf.get_api_key(valid_email, valid_password)
         _, my_pets = pf.list_of_pets(auth_key, 'my_pets')
 
@@ -155,7 +139,10 @@ class TestFunctions:
         status, result = pf.add_photo_of_pet(auth_key, pet_id, pet_photo)
         assert status == 400
 
-#############################################Непараметризовано###########################################
+    '''
+    ==========================Work in progress below this line (parameterizing)==================
+    '''
+
     @pytest.mark.smoke
     @pytest.mark.positive
     def test_add_new_pet_with_valid_data_and_photo(self, name="Пушистик", animal_type="Racoon",
@@ -168,7 +155,6 @@ class TestFunctions:
     @pytest.mark.smoke
     @pytest.mark.positive
     def test_update_information_about_pet_with_valid_data(self, name='Полосатик', animal_type="Енот", age='4'):
-
 
         _, my_pets = self.pf.list_of_pets(self.key, 'my_pets')
 
@@ -205,15 +191,9 @@ class TestFunctions:
             pf.add_new_pet_without_photo(self.key, "Тест-кот", "кот", "2")
             _, my_pets = pf.list_of_pets(self.key, "my_pets")
 
-
         pet_id = my_pets['pets'][0]['id']
         self.status, result = pf.add_photo_of_pet_without_photo(self.key, pet_id)
         assert self.status == 400
-
-
-    
-    
-
 
     def test_get_api_for_user_none_password_field(email=valid_email):
         status, result = pf.get_api_key_none_password_param(email)

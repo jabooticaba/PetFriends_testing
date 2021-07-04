@@ -199,3 +199,15 @@ class TestFunctions:
         status, result = pf.get_api_key_none_password_param(email)
 
         assert status == 200
+
+    @pytest.mark.smoke
+    @pytest.mark.positive
+    @pytest.mark.delete
+    def test_delete_pet_valid_id(self):
+        _, my_pets = self.pf.list_of_pets(self.key, 'my_pets')
+
+        pet_id = my_pets['pets'][0]['id']
+        self.status = self.pf.delete_pet(self.key, pet_id)
+        _, my_pets = self.pf.list_of_pets(self.key, "my_pets")
+
+        assert self.status == 200

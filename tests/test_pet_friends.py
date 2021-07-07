@@ -21,11 +21,12 @@ class TestFunctions:
 
     @pytest.mark.smoke
     @pytest.mark.negative
-    @pytest.mark.parametrize("email", ['valid_email', 'None'], ids=['valid', 'empty'])
-    @pytest.mark.parametrize("password", ['valid_password', 'None'], ids=['valid', 'empty'])
+    @pytest.mark.parametrize("email", [valid_email, 'None'], ids=['valid', 'empty'])
+    @pytest.mark.parametrize("password", [valid_password, 'None'], ids=['valid', 'empty'])
     def test_get_api_key_negative(self, email, password):
-        status, result = pf.get_api_key(email, password)
-        assert status == 403
+        if email != valid_email or password != valid_password:
+            status, result = pf.get_api_key(email, password)
+            assert status == 403
 
     # @pytest.fixture(autouse=True)
     # def logging(self, request):
